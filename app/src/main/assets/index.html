@@ -1,0 +1,432 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0b1020">
+<title>GOAL - Alex Game Launcher</title>
+
+<style>
+:root {
+  --bg: #0b1020;
+  --panel: #151d32;
+  --panel2: #1c2842;
+  --gold: #f2bd55;
+  --text: #f4f5fa;
+  --muted: #9ba8c1;
+  --blue: #5c8dff;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Arial, sans-serif;
+}
+header {
+  padding: 22px 18px;
+  background: linear-gradient(135deg,#172747,#101528);
+  border-bottom: 1px solid #293858;
+}
+.logo {
+  font-size: 30px;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 3px;
+}
+.subtitle { color: var(--muted); font-size: 12px; }
+nav {
+  display: flex;
+  gap: 9px;
+  padding: 14px;
+  overflow-x: auto;
+  background: #10172a;
+}
+button, .tab {
+  border: 0;
+  border-radius: 9px;
+  padding: 11px 15px;
+  color: white;
+  background: var(--panel2);
+  cursor: pointer;
+  font-weight: bold;
+}
+button:active { transform: scale(.97); }
+.tab.active, .primary {
+  background: var(--gold);
+  color: #171522;
+}
+main { padding: 18px; max-width: 850px; margin: auto; }
+h2 { margin-top: 8px; }
+.muted { color: var(--muted); }
+.hero {
+  padding: 24px;
+  border-radius: 17px;
+  background: linear-gradient(135deg,#253e69,#171d35);
+  margin-bottom: 24px;
+}
+.hero h1 { margin: 0 0 10px; font-size: 25px; }
+.search {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid #34415e;
+  background: var(--panel);
+  color: white;
+  margin: 12px 0 18px;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(145px,1fr));
+  gap: 13px;
+}
+.card {
+  background: var(--panel);
+  border: 1px solid #263653;
+  padding: 17px;
+  border-radius: 14px;
+}
+.cover {
+  height: 85px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 40px;
+  background: linear-gradient(135deg,#253e69,#42315f);
+  margin-bottom: 12px;
+}
+.card h3 { margin: 5px 0; font-size: 16px; }
+.card p { font-size: 12px; color: var(--muted); }
+.card button { width: 100%; margin-top: 7px; }
+section { margin-bottom: 28px; }
+.hidden { display: none; }
+input[type=file] { display: none; }
+.game-area {
+  min-height: 220px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #111a2d;
+  text-align: center;
+}
+#gameFrame {
+  width: 100%;
+  height: 65vh;
+  border: 1px solid #34415e;
+  border-radius: 12px;
+  background: white;
+}
+footer {
+  padding: 25px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+.small { font-size: 12px; }
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">GOAL</div>
+  <div class="subtitle">ALEX GAME LAUNCHER · YOUR GAMES, YOUR WORLD</div>
+</header>
+
+<nav>
+  <button class="tab active" onclick="showPage('home',this)">Accueil</button>
+  <button class="tab" onclick="showPage('library',this)">Bibliothèque</button>
+  <button class="tab" onclick="showPage('favorites',this)">Favoris</button>
+  <button class="tab" onclick="showPage('settings',this)">Paramètres</button>
+</nav>
+
+<main>
+
+<section id="home">
+  <div class="hero">
+    <h1>Bienvenue dans GOAL</h1>
+    <p>Un espace pour découvrir, organiser et lancer tes jeux.</p>
+    <button class="primary" onclick="showPage('library')">Explorer les jeux</button>
+  </div>
+
+  <h2>À découvrir</h2>
+  <div class="grid">
+    <div class="card">
+      <div class="cover">⚔️</div>
+      <h3>ABYSS</h3>
+      <p>Entraînement fantasy</p>
+      <button onclick="launchDemo('abyss')">Jouer</button>
+    </div>
+    <div class="card">
+      <div class="cover">⚡</div>
+      <h3>Neon Dash</h3>
+      <p>Mini-jeu de réflexes</p>
+      <button onclick="launchDemo('neon')">Jouer</button>
+    </div>
+  </div>
+
+  <section>
+    <h2>Récemment joués</h2>
+    <div id="recent" class="muted small">Aucun jeu lancé pour le moment.</div>
+  </section>
+</section>
+
+<section id="library" class="hidden">
+  <h2>Bibliothèque</h2>
+  <p class="muted">Retrouve ici tes jeux.</p>
+  <input class="search" id="search" placeholder="Rechercher un jeu..." oninput="filterGames()">
+  <div class="grid" id="gameList"></div>
+  <br>
+  <label class="primary" style="display:inline-block;padding:12px;border-radius:9px;cursor:pointer">
+    + Importer un jeu HTML
+    <input type="file" id="fileInput" accept=".html,.htm,text/html" onchange="importGame(event)">
+  </label>
+  <p class="muted small">Importe des fichiers HTML de confiance. Les jeux importés restent sur cet appareil.</p>
+</section>
+
+<section id="favorites" class="hidden">
+  <h2>Mes favoris ⭐</h2>
+  <div class="grid" id="favoriteList"></div>
+</section>
+
+<section id="settings" class="hidden">
+  <h2>Paramètres</h2>
+  <div class="card">
+    <h3>À propos de GOAL</h3>
+    <p>Alex Game Launcher · Version 1.0</p>
+    <p>Un launcher personnel pour tes jeux HTML.</p>
+  </div>
+  <br>
+  <div class="card">
+    <h3>Données locales</h3>
+    <p>Les favoris, jeux importés et historiques sont conservés sur cet appareil.</p>
+    <button onclick="clearData()">Effacer les données locales</button>
+  </div>
+</section>
+
+<section id="player" class="hidden">
+  <button onclick="showPage('library')">← Retour</button>
+  <h2 id="playingTitle">Jeu</h2>
+  <div id="demoArea" class="game-area hidden"></div>
+  <iframe id="gameFrame" class="hidden" sandbox="allow-scripts allow-forms" title="Jeu importé"></iframe>
+</section>
+
+</main>
+
+<footer>
+  GOAL · ALEX GAME LAUNCHER<br>
+  Made for gaming and creativity.
+</footer>
+
+<script>
+const builtIn = [
+  {id:"abyss",name:"ABYSS",description:"Entraînement fantasy",icon:"⚔️",type:"demo"},
+  {id:"neon",name:"Neon Dash",description:"Mini-jeu de réflexes",icon:"⚡",type:"demo"}
+];
+
+let imported = JSON.parse(localStorage.getItem("goalGames") || "[]");
+let favorites = JSON.parse(localStorage.getItem("goalFavorites") || "[]");
+let recent = JSON.parse(localStorage.getItem("goalRecent") || "[]");
+
+function allGames() {
+  return [...builtIn,...imported];
+}
+
+function save() {
+  localStorage.setItem("goalGames",JSON.stringify(imported));
+  localStorage.setItem("goalFavorites",JSON.stringify(favorites));
+  localStorage.setItem("goalRecent",JSON.stringify(recent));
+}
+
+function showPage(page,button) {
+  document.querySelectorAll("main > section").forEach(s=>s.classList.add("hidden"));
+  document.getElementById(page).classList.remove("hidden");
+  document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+  if(button) button.classList.add("active");
+  if(page==="library") renderLibrary();
+  if(page==="favorites") renderFavorites();
+  if(page==="home") renderRecent();
+}
+
+function renderLibrary() {
+  const list=document.getElementById("gameList");
+  list.innerHTML="";
+  allGames().forEach(game=>{
+    const card=document.createElement("div");
+    card.className="card";
+    const cover=document.createElement("div");
+    cover.className="cover";
+    cover.textContent=game.icon || "🎮";
+    const title=document.createElement("h3");
+    title.textContent=game.name;
+    const desc=document.createElement("p");
+    desc.textContent=game.description || "Jeu importé";
+    const play=document.createElement("button");
+    play.textContent="Jouer";
+    play.onclick=()=>launchGame(game);
+    const fav=document.createElement("button");
+    fav.textContent=favorites.includes(game.id)?"★ Favori":"☆ Ajouter aux favoris";
+    fav.onclick=()=>toggleFavorite(game.id);
+    card.append(cover,title,desc,play,fav);
+    list.appendChild(card);
+  });
+  filterGames();
+}
+
+function filterGames() {
+  const q=(document.getElementById("search")?.value || "").toLowerCase();
+  document.querySelectorAll("#gameList .card").forEach(card=>{
+    card.style.display=card.textContent.toLowerCase().includes(q)?"":"none";
+  });
+}
+
+function toggleFavorite(id) {
+  favorites=favorites.includes(id)?favorites.filter(x=>x!==id):[...favorites,id];
+  save();
+  renderLibrary();
+  renderFavorites();
+}
+
+function renderFavorites() {
+  const list=document.getElementById("favoriteList");
+  list.innerHTML="";
+  const games=allGames().filter(g=>favorites.includes(g.id));
+  if(!games.length) {
+    list.textContent="Aucun favori pour le moment.";
+    list.className="muted";
+    return;
+  }
+  list.className="grid";
+  games.forEach(game=>{
+    const card=document.createElement("div");
+    card.className="card";
+    const title=document.createElement("h3");
+    title.textContent=game.icon+" "+game.name;
+    const play=document.createElement("button");
+    play.textContent="Jouer";
+    play.onclick=()=>launchGame(game);
+    card.append(title,play);
+    list.append(card);
+  });
+}
+
+function addRecent(game) {
+  recent=[game.id,...recent.filter(x=>x!==game.id)].slice(0,5);
+  save();
+  renderRecent();
+}
+
+function renderRecent() {
+  const el=document.getElementById("recent");
+  const games=recent.map(id=>allGames().find(g=>g.id===id)).filter(Boolean);
+  el.innerHTML="";
+  if(!games.length) {
+    el.textContent="Aucun jeu lancé pour le moment.";
+    return;
+  }
+  games.forEach(g=>{
+    const b=document.createElement("button");
+    b.textContent=g.icon+" "+g.name;
+    b.style.margin="4px";
+    b.onclick=()=>launchGame(g);
+    el.appendChild(b);
+  });
+}
+
+function launchGame(game) {
+  addRecent(game);
+  document.getElementById("playingTitle").textContent=game.name;
+  document.getElementById("demoArea").classList.add("hidden");
+  document.getElementById("gameFrame").classList.add("hidden");
+  if(game.type==="demo") {
+    launchDemo(game.id);
+    return;
+  }
+  const frame=document.getElementById("gameFrame");
+  frame.srcdoc=game.html;
+  frame.classList.remove("hidden");
+  showPage("player");
+}
+
+function launchDemo(id) {
+  showPage("player");
+  const area=document.getElementById("demoArea");
+  const frame=document.getElementById("gameFrame");
+  frame.classList.add("hidden");
+  area.classList.remove("hidden");
+  if(id==="abyss") {
+    document.getElementById("playingTitle").textContent="ABYSS - Salle d'entraînement";
+    area.innerHTML=`
+      <div style="font-size:55px">⚔️</div>
+      <h2>Bienvenue, aventurier !</h2>
+      <p>Tu entres dans la salle d'entraînement.</p>
+      <p id="abyssScore">Entraînements : 0</p>
+      <button class="primary" onclick="train()">S'entraîner</button>`;
+    window.abyssCount=0;
+  } else {
+    document.getElementById("playingTitle").textContent="Neon Dash";
+    area.innerHTML=`
+      <div style="font-size:50px">⚡</div>
+      <h2>Neon Dash</h2>
+      <p>Appuie sur le bouton le plus vite possible !</p>
+      <p id="neonScore">Score : 0</p>
+      <button class="primary" onclick="dash()">DASH !</button>`;
+    window.neonCount=0;
+  }
+}
+
+function train() {
+  window.abyssCount++;
+  document.getElementById("abyssScore").textContent="Entraînements : "+window.abyssCount;
+}
+
+function dash() {
+  window.neonCount++;
+  document.getElementById("neonScore").textContent="Score : "+window.neonCount;
+}
+
+function importGame(event) {
+  const file=event.target.files[0];
+  if(!file) return;
+  if(file.size>2*1024*1024) {
+    alert("Le fichier dépasse la limite de 2 Mo.");
+    event.target.value="";
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const id="import_"+Date.now();
+    imported.push({
+      id,
+      name:file.name.replace(/\.html?$/i,""),
+      description:"Jeu HTML importé",
+      icon:"🎮",
+      type:"html",
+      html:reader.result
+    });
+    save();
+    renderLibrary();
+    alert("Jeu importé dans GOAL !");
+  };
+  reader.readAsText(file);
+}
+
+function clearData() {
+  if(!confirm("Effacer les jeux importés, favoris et historique de cet appareil ?")) return;
+  imported=[];
+  favorites=[];
+  recent=[];
+  save();
+  renderLibrary();
+  renderFavorites();
+  renderRecent();
+  alert("Données locales effacées.");
+}
+
+renderLibrary();
+renderRecent();
+</script>
+
+</body>
+    </html>
+    
